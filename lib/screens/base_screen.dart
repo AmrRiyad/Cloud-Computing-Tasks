@@ -55,8 +55,6 @@ class _MainScreenState extends BaseScreen<MainScreen> {
   }
 
   AppBar _buildAppBar(UserModel? user) {
-    bool isDark = AdaptiveTheme.of(context).mode.isDark;
-
     // Fetch the localized string for the title
     String appBarTitle;
     switch (screenTitle) {
