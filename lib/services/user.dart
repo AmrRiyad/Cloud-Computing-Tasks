@@ -37,8 +37,6 @@ class UserService implements IUserService {
   // Private constructor
   UserService._internal();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   // Stream controller for user changes
   final StreamController<UserModel> _userChangeController =
       StreamController<UserModel>.broadcast();
