@@ -7,8 +7,8 @@ import 'package:cc_sa_1/services/user.dart';
 import 'package:flutter/material.dart';
 
 
-import '../../../../shared/localization.dart';
-import '../../models/user.dart';
+import '../shared/localization.dart';
+import '../models/user.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   late Locale _currentLocale;

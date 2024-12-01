@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-import '../databases/user.dart';
 import '../models/user.dart';
 
 abstract class IUserService {
@@ -99,13 +98,6 @@ class UserService implements IUserService {
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      // Get the current user's ID after signing in
-      String? currentUserID = FirebaseAuth.instance.currentUser?.uid;
-
-      if (currentUserID != null) {
-        await UserDatabaseProvider()
-            .updateGuestUserIDToCurrentUser(currentUserID);
-      }
 
       await refreshCurrentUserInstance();
     } catch (e) {
@@ -181,8 +173,6 @@ class UserService implements IUserService {
 
       // Delete user's document from Firestore
       await FirebaseFirestore.instance.collection('users').doc(uID).delete();
-
-      await UserDatabaseProvider().deleteUserData(uID);
 
       // Clear the current user instance
       await refreshCurrentUserInstance();
