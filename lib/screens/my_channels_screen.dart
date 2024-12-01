@@ -61,9 +61,13 @@ class SubscribedChannelsScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Card(
+                  child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    elevation: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white, // White background
+                      border: Border.all(color: Colors.cyan, width: 1.5), // Cyan border
+                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
@@ -73,6 +77,7 @@ class SubscribedChannelsScreen extends StatelessWidget {
                     ),
                   ),
                 );
+
               },
             );
           }

@@ -124,40 +124,10 @@ class _MyAppState extends BaseScreen<MyApp> {
                 ),
               ),
             ),
-            dark: ThemeData(
-              useMaterial3: true,
-              appBarTheme: const AppBarTheme(
-                elevation: 4,
-                shadowColor: Colors.cyan,
-                color: Colors.black,
-                foregroundColor: Colors.white,
-              ),
-              scaffoldBackgroundColor: Colors.black,
-              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-                backgroundColor: Colors.black,
-                selectedItemColor: Colors.cyan,
-                unselectedItemColor: Colors.white54,
-              ),
-              textTheme: Typography.whiteMountainView.copyWith(
-                displayLarge:
-                    Typography.whiteMountainView.displayLarge?.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-              primaryTextTheme: Typography.whiteMountainView.copyWith(
-                displayLarge:
-                    Typography.whiteMountainView.displayLarge?.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-              iconTheme: IconThemeData(color: Colors.yellow.shade700),
-              dividerTheme: const DividerThemeData(color: Colors.white38),
-            ),
-            initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
+            initial: AdaptiveThemeMode.light,
             builder: (theme, darkTheme) => MaterialApp(
               debugShowCheckedModeBanner: false,
               theme: theme,
-              darkTheme: darkTheme,
               home: currentUser?.uID != "GUEST"
                   ? const MainScreen()
                   : const LoginScreen(),

@@ -1,8 +1,7 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../services/validation.dart';
+import '../services/validation.dart';
 import 'base.dart';
 import 'base_screen.dart';
 
@@ -16,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends BaseScreen<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // Form key
+  final _formKey = GlobalKey<FormState>();
 
   IValidationService get _validationService => ValidationService();
 
@@ -26,18 +25,11 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
         ? buildLoadingIndicator()
         : Scaffold(
             appBar: AppBar(),
-            body: Directionality(
-              textDirection: currentLocale.languageCode == 'ar'
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-              child: _buildLoginForm(),
-            ),
+            body: Center(child: _buildLoginForm()),
           );
   }
 
   Widget _buildLoginForm() {
-    bool isDark = AdaptiveTheme.of(context).mode.isDark;
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
@@ -52,30 +44,29 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
           children: [
             SizedBox(height: verticalSpacingSmall),
             Text(
-              localization.get('loginTitle'),
+              "Login",
               style: TextStyle(
                   fontSize: titleFontSize,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black),
+                  color: Colors.black),
             ),
             SizedBox(height: verticalSpacingSmall),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: _buildTextField(
                 _emailController,
-                localization.get('email'),
+                "Email",
                 _validationService.validateEmail,
                 true,
                 TextInputType.emailAddress,
               ),
             ),
             SizedBox(height: verticalSpacingSmall),
-
             Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: _buildTextField(
                 _passwordController,
-                localization.get('password'),
+                "password",
                 _validationService.validatePassword,
                 true,
                 TextInputType.visiblePassword,
@@ -99,34 +90,31 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     // Responsive adjustments
-    double fontSize =
-        screenWidth * 0.045;
-    double verticalPadding =
-        screenWidth * 0.02;
-    double borderRadius =
-        screenWidth * 0.03;
-    bool isDark = AdaptiveTheme.of(context).mode.isDark;
+    double fontSize = screenWidth * 0.045;
+    double verticalPadding = screenWidth * 0.02;
+    double borderRadius = screenWidth * 0.03;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: verticalPadding),
       child: TextFormField(
+        selectionControls: EmptyTextSelectionControls(),
         keyboardType: keyboard,
-        style: TextStyle(
-            color: isDark ? Colors.white : Colors.black, fontSize: fontSize),
+        style: TextStyle(color: Colors.black, fontSize: fontSize),
         controller: controller,
-        cursorColor: isDark ? Colors.yellow.shade700 : Colors.yellow.shade800,
+        cursorColor: Colors.cyan,
+        cursorOpacityAnimates: true,
         obscureText: isPassword,
         decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             borderSide:
-                BorderSide(color: isDark ? Colors.white70 : Colors.black87),
+                const BorderSide(color: Colors.black87),
           ),
           labelStyle: TextStyle(
-              color: isDark ? Colors.white70 : Colors.black87,
+              color: Colors.black87,
               fontSize: fontSize),
           hintStyle: TextStyle(
-              color: isDark ? Colors.white10 : Colors.black12,
+              color: Colors.black12,
               fontSize: fontSize * 0.9),
           labelText: '$label${required ? ' *' : ''}',
           border: OutlineInputBorder(
@@ -142,11 +130,9 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     // Responsive button size and font size adjustments
-    double buttonWidth = screenWidth * 0.5; // 50% of screen width
-    double buttonHeight = screenHeight * 0.08; // 8% of screen height
-    double fontSize =
-        screenWidth * 0.045; // Adjust font size based on screen width
-    bool isDark = AdaptiveTheme.of(context).mode.isDark;
+    double buttonWidth = screenWidth * 0.5;
+    double buttonHeight = screenHeight * 0.08;
+    double fontSize = screenWidth * 0.045;
 
     return ElevatedButton(
       onPressed: _login,
@@ -158,9 +144,9 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
         ),
       ),
       child: Text(
-        localization.get('signInButton'),
+        "Sign In",
         style: TextStyle(
-          color: isDark ? Colors.black : Colors.white,
+          color: Colors.white,
           fontSize: fontSize,
         ),
       ),
@@ -171,9 +157,10 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
       try {
-        await userService.signIn(_emailController.text, _passwordController.text);
+        await userService.signIn(
+            _emailController.text, _passwordController.text);
 
-        toastService.showSuccessMessage(localization.get('signInSuccess'));
+        toastService.showSuccessMessage("Signed in successfully");
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -184,16 +171,16 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
 
         if (e.code == 'user-not-found') {
           toastService
-              .showErrorMessage(localization.get('phoneNumberNotRegistered'));
+              .showErrorMessage("Phone Number Not Registered");
         } else if (e.code == 'wrong-password') {
-          toastService.showErrorMessage(localization.get('signInError'));
+          toastService.showErrorMessage("signInError");
         } else {
           toastService
-              .showErrorMessage(localization.get('unknownErrorOccurred'));
+              .showErrorMessage("unknownErrorOccurred");
         }
       } catch (e) {
         setState(() => isLoading = false);
-        toastService.showErrorMessage(localization.get('unknownErrorOccurred'));
+        toastService.showErrorMessage("unknownErrorOccurred");
       } finally {
         setState(() => isLoading = false);
       }

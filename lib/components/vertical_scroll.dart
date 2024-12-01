@@ -212,10 +212,13 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
           : ListView.builder(
               itemCount: cardNames.length,
               itemBuilder: (context, index) {
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  elevation: 4,
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Card background color
+                    border: Border.all(color: Colors.cyan, width: 1.5), // Cyan border
+                    borderRadius: BorderRadius.circular(8.0), // Optional: Rounded corners
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -224,8 +227,7 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
                         // Card title
                         Text(
                           cardNames[index],
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         const Spacer(),
                         // Subscribe/Unsubscribe button
@@ -233,12 +235,18 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
                           onPressed: () => toggleSubscription(index),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isSubscribed[index]
-                                ? Colors.grey // Gray for "Unsubscribe"
+                                ? Colors.white // White for "Unsubscribe"
                                 : Colors.cyan, // Cyan for "Subscribe"
+                            side: const BorderSide(color: Colors.cyan, width: 1.5), // Cyan border
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                            ),
                           ),
                           child: Text(
                             isSubscribed[index] ? 'Unsubscribe' : 'Subscribe',
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              color: isSubscribed[index] ? Colors.cyan : Colors.white,
+                            ),
                           ),
                         ),
                         IconButton(
@@ -248,13 +256,22 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
                       ],
                     ),
                   ),
-                );
+                )
+                ;
               },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddChannelDialog,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.cyan,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Optional: Rounded corners
+          side: const BorderSide(color: Colors.cyan, width: 1.5), // Cyan border
+        ),
         child: const Icon(Icons.add),
       ),
+
     );
   }
 }

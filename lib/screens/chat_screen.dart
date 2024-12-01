@@ -49,7 +49,8 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat - $channelName'),
+        centerTitle: true,
+        title: Text('$channelName - Chat Room ', style: const TextStyle(fontSize: 18),),
       ),
       body: Column(
         children: [
@@ -94,32 +95,48 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
                       final message = messages[index];
                       final isMe = message['sender'] == currentUser.email;
 
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Display sender email
-                            Text(
-                              message['sender'] ?? 'Unknown Sender',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            const SizedBox(height: 4),
-                            // Display message text
-                            Text(
-                              message['text'],
-                              style: TextStyle(
-                                color: isMe ? Colors.blue : Colors.black,
-                                fontSize: 16,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Display sender email
+                              Text(
+                                message['sender'] ?? 'Unknown Sender',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              // Display message text
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isMe ? Colors.blue.shade100 : Colors.grey.shade200, // Background color
+                                  borderRadius: BorderRadius.circular(12), // Rounded corners
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1), // Subtle shadow
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  message['text'],
+                                  style: TextStyle(
+                                    color: isMe ? Colors.blue : Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   );
+
                 } else {
                   return const Center(child: Text('No messages yet.'));
                 }
@@ -131,15 +148,33 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration:
-                        const InputDecoration(hintText: 'Enter message'),
-                  ),
+                    child: TextField(
+                      selectionControls: EmptyTextSelectionControls(),
+                      cursorOpacityAnimates: true,
+                      cursorColor: Colors.cyan,
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter message',
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.cyan, width: 2), // Cyan border when focused
+                          borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.cyan, width: 1.5), // Cyan border when not focused
+                          borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.cyan, width: 1), // Default border
+                          borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                        ),
+                      ),
+                    )
+
+
                 ),
                 IconButton(
                   onPressed: sendMessage,
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.cyan,),
                 ),
               ],
             ),

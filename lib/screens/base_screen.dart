@@ -4,7 +4,6 @@ import 'base.dart';
 import '../models/user.dart';
 import 'all_channels_screen.dart';
 import 'my_channels_screen.dart';
-import 'notification_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -23,7 +22,6 @@ class _MainScreenState extends BaseScreen<MainScreen> {
     pages = [
       const AllChannelsScreen(),
       const SubscribedChannelsScreen(),
-      const NotificationScreen(),
     ];
 
     setState(() {
@@ -35,16 +33,14 @@ class _MainScreenState extends BaseScreen<MainScreen> {
   Widget build(BuildContext context) {
     return isLoading
         ? buildLoadingIndicator()
-        : Directionality(
-            textDirection: currentLocale.languageCode == 'ar'
-                ? TextDirection.rtl
-                : TextDirection.ltr,
-            child: Scaffold(
-              appBar: _buildAppBar(currentUser),
-              body: _buildPageContent(), // IndexedStack for the content
-              bottomNavigationBar: _buildBottomNavigationBar(),
-            ),
-          );
+        : Scaffold(
+          appBar: _buildAppBar(currentUser),
+          body: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: _buildPageContent(),
+          ),
+          bottomNavigationBar: _buildBottomNavigationBar(),
+        );
   }
 
   Widget _buildPageContent() {
@@ -55,21 +51,9 @@ class _MainScreenState extends BaseScreen<MainScreen> {
   }
 
   AppBar _buildAppBar(UserModel? user) {
-    // Fetch the localized string for the title
     String appBarTitle;
-    switch (screenTitle) {
-      case 'All Channels':
-        appBarTitle = localization.get('allChannels');
-        break;
-      case 'My Channels':
-        appBarTitle = localization.get('myChannels');
-        break;
-      case 'More':
-        appBarTitle = localization.get('more');
-        break;
-      default:
-        appBarTitle = localization.get('appTitle');
-    }
+    appBarTitle = screenTitle;
+
 
     double titleSize = 0.4 * AppBar().preferredSize.height;
     return AppBar(
@@ -77,20 +61,6 @@ class _MainScreenState extends BaseScreen<MainScreen> {
       leadingWidth: titleSize * 3,
       centerTitle: true,
       title: Text(appBarTitle, style: TextStyle(fontSize: titleSize)),
-      actions: [
-        IconButton(
-          iconSize: titleSize, // Adjust icon size
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const NotificationScreen(),
-            ),
-          ),
-          icon: Icon(
-            Icons.notifications_none_rounded,
-            size: titleSize * 1.4,
-          ),
-        ),
-      ],
     );
   }
 
@@ -100,24 +70,20 @@ class _MainScreenState extends BaseScreen<MainScreen> {
       onTap: (index) {
         setState(() {
           currentPageIndex = index;
-          screenTitle = ['All Channels', 'My Channels', 'More'][index];
+          screenTitle = ['All Channels', 'My Channels'][index];
         });
       },
       currentIndex: currentPageIndex,
       showUnselectedLabels: true,
       iconSize: 26,
-      items: [
+      items: const [
         BottomNavigationBarItem(
-          icon: const Icon(Icons.home, size: 26),
-          label: localization.get('allChannels'),
+          icon: Icon(Icons.home, size: 26),
+          label: "All Channels",
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.category, size: 26),
-          label: localization.get('myChannels'),
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.more_horiz_outlined, size: 26),
-          label: localization.get('more'),
+          icon: Icon(Icons.category, size: 26),
+          label: "My Channels",
         ),
       ],
     );
