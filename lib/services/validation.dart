@@ -21,9 +21,6 @@ class ValidationService implements IValidationService {
   // Regular expression pattern for validating email format
   final _emailPattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$';
 
-  // Regular expression pattern for validating password
-  final _passwordPattern = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$';
-
   @override
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {

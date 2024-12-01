@@ -100,11 +100,11 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
 
     // Responsive adjustments
     double fontSize =
-        screenWidth * 0.045; // Adjust font size based on screen width
+        screenWidth * 0.045;
     double verticalPadding =
-        screenWidth * 0.02; // Adjust vertical padding based on screen width
+        screenWidth * 0.02;
     double borderRadius =
-        screenWidth * 0.03; // Adjust border radius based on screen width
+        screenWidth * 0.03;
     bool isDark = AdaptiveTheme.of(context).mode.isDark;
 
     return Padding(

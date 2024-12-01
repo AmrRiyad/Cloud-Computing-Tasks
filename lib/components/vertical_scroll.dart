@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class ScrollableCardsPage extends StatefulWidget {
+  const ScrollableCardsPage({super.key});
+
   @override
   _ScrollableCardsPageState createState() => _ScrollableCardsPageState();
 }
@@ -19,24 +22,40 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     fetchTopicsFromFirestore();
   }
 
-  // Fetch topics from Firestore and update the cardNames list
   Future<void> fetchTopicsFromFirestore() async {
     try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final currentUser = FirebaseAuth.instance.currentUser;
 
-      // Assuming you have a collection named 'topics' in Firestore
-      QuerySnapshot snapshot = await firestore.collection('Channels').get();
+      if (currentUser == null) {
+        throw Exception('User not logged in');
+      }
 
-      // Extract topic names from documents
-      List<String> topics = snapshot.docs
-          .map((doc) =>
-              doc.id as String) // Assuming the field is named 'topicName'
-          .toList();
+      final userEmail = currentUser.email;
+      if (userEmail == null) {
+        throw Exception('User email not available');
+      }
 
-      // Update the UI with the fetched topics
+      final firestore = FirebaseFirestore.instance;
+
+      // Fetch all available topics
+      QuerySnapshot topicSnapshot = await firestore.collection('Channels').get();
+      List<String> topics = topicSnapshot.docs.map((doc) => doc.id).toList();
+
+      // Fetch user's subscribed channels
+      DocumentSnapshot userDoc =
+      await firestore.collection('users').doc(userEmail).get();
+      List<String> userChannels = [];
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        if (data.containsKey('channels')) {
+          userChannels = List<String>.from(data['channels']);
+        }
+      }
+
+      // Set state to update the UI
       setState(() {
         cardNames = topics;
-        isSubscribed = List.generate(cardNames.length, (index) => false);
+        isSubscribed = topics.map((topic) => userChannels.contains(topic)).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -45,19 +64,58 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     }
   }
 
-  // Toggle subscription state and perform the subscription/unsubscription
+
+// Toggle subscription state and perform the subscription/unsubscription
   Future<void> toggleSubscription(int index) async {
     final topic = cardNames[index];
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    final userEmail = currentUser.email; // Get the current user's email
+
+    if (userEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User email not available')),
+      );
+      return;
+    }
+
     try {
+      final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
+
       if (!isSubscribed[index]) {
         // Subscribe to the topic
         await FirebaseMessaging.instance.subscribeToTopic(topic);
+
+        // Add the topic to the channels list in Firestore
+        await userDocRef.set(
+          {
+            'channels': FieldValue.arrayUnion([topic]),
+          },
+          SetOptions(merge: true), // Merge with existing data
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Subscribed to $topic')),
         );
       } else {
         // Unsubscribe from the topic
         await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+
+        // Remove the topic from the channels list in Firestore
+        await userDocRef.set(
+          {
+            'channels': FieldValue.arrayRemove([topic]),
+          },
+          SetOptions(merge: true),
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Unsubscribed from $topic')),
         );
@@ -73,6 +131,7 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
       );
     }
   }
+
 
   // Function to show a dialog and add a new topic to Firestore
   void showAddChannelDialog() {

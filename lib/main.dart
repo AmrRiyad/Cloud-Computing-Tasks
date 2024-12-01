@@ -3,6 +3,7 @@ import 'package:cc_sa_1/screens/base.dart';
 import 'package:cc_sa_1/screens/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'screens/base_screen.dart';
 import 'shared/firebase_options.dart';
@@ -22,7 +23,9 @@ void foregroundNotificationHandler(RemoteMessage message) async {
       'date': message.sentTime.toString(),
     });
   } catch (e) {
-    print(e.toString());
+    if (kDebugMode) {
+      print(e.toString());
+    }
   }
 }
 
@@ -41,7 +44,9 @@ Future<void> backgroundNotificationHandler(RemoteMessage message) async {
       'date': message.sentTime.toString(),
     });
   } catch (e) {
-    print(e.toString());
+    if (kDebugMode) {
+      print(e.toString());
+    }
   }
 }
 
@@ -56,9 +61,13 @@ void main() async {
 
   try {
     String? token = await messaging.getToken();
-    print("FCM Token: $token");
+    if (kDebugMode) {
+      print("FCM Token: $token");
+    }
   } catch (e) {
-    print("Error: $e");
+    if (kDebugMode) {
+      print("Error: $e");
+    }
   }
 
 

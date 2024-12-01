@@ -1,9 +1,9 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'base.dart';
 import '../models/user.dart';
 import 'all_channels_screen.dart';
+import 'my_channels_screen.dart';
 import 'notification_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -22,7 +22,7 @@ class _MainScreenState extends BaseScreen<MainScreen> {
   Future<void> initializeScreenState() async {
     pages = [
       const AllChannelsScreen(),
-      const NotificationScreen(),
+      const SubscribedChannelsScreen(),
       const NotificationScreen(),
     ];
 

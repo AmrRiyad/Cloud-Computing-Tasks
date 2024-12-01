@@ -12,6 +12,6 @@ class AllChannelsScreen extends StatefulWidget {
 class _AllChannelsScreenState extends State<AllChannelsScreen> {
   @override
   Widget build(BuildContext context) {
-    return ScrollableCardsPage();
+    return const ScrollableCardsPage();
   }
 }
