@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "71104364512",
+    "firebase_url": "https://flutter-cloud-computing-tasks-default-rtdb.firebaseio.com",
+    "project_id": "flutter-cloud-computing-tasks",
+    "storage_bucket": "flutter-cloud-computing-tasks.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71104364512:android:a8110bd296e7a8999df585",
+        "android_client_info": {
+          "package_name": "com.example.cc_sa_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkW_yv5wl4IIeCJDwA3Mwkw0P-V8KAdKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
