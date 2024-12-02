@@ -29,3 +29,8 @@ This repository contains a collection of tasks and assignments related to Cloud 
 4. Run the App:
    ```bash
    flutter run
+
+5. Dependencies
+   - Flutter SDK
+   - Firebase libraries (if used)
+   - Platform-specific dependencies (see pubspec.yaml)
