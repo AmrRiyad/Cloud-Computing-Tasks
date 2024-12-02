@@ -66,7 +66,7 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
                   .onValue,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(color: Colors.cyan,));
                 }
 
                 if (snapshot.hasError) {

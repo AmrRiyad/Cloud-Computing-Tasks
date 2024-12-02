@@ -90,7 +90,7 @@ class _MyAppState extends BaseScreen<MyApp> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? const CircularProgressIndicator()
+        ? buildLoadingIndicator()
         : AdaptiveTheme(
             light: ThemeData(
               useMaterial3: true,

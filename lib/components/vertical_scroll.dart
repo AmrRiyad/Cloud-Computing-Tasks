@@ -64,8 +64,6 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     }
   }
 
-
-// Toggle subscription state and perform the subscription/unsubscription
   Future<void> toggleSubscription(int index) async {
     final topic = cardNames[index];
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -87,38 +85,10 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     }
 
     try {
-      final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
-
       if (!isSubscribed[index]) {
-        // Subscribe to the topic
-        await FirebaseMessaging.instance.subscribeToTopic(topic);
-
-        // Add the topic to the channels list in Firestore
-        await userDocRef.set(
-          {
-            'channels': FieldValue.arrayUnion([topic]),
-          },
-          SetOptions(merge: true), // Merge with existing data
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Subscribed to $topic')),
-        );
+        await subscribe(userEmail, topic);
       } else {
-        // Unsubscribe from the topic
-        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-
-        // Remove the topic from the channels list in Firestore
-        await userDocRef.set(
-          {
-            'channels': FieldValue.arrayRemove([topic]),
-          },
-          SetOptions(merge: true),
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Unsubscribed from $topic')),
-        );
+        await unsubscribe(userEmail, topic);
       }
 
       // Update the UI
@@ -132,6 +102,43 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     }
   }
 
+  Future<void> subscribe(String userEmail, String topic) async {
+    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
+
+    // Subscribe to the topic
+    await FirebaseMessaging.instance.subscribeToTopic(topic);
+
+    // Add the topic to the channels list in Firestore
+    await userDocRef.set(
+      {
+        'channels': FieldValue.arrayUnion([topic]),
+      },
+      SetOptions(merge: true), // Merge with existing data
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Subscribed to $topic')),
+    );
+  }
+
+  Future<void> unsubscribe(String userEmail, String topic) async {
+    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
+
+    // Unsubscribe from the topic
+    await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+
+    // Remove the topic from the channels list in Firestore
+    await userDocRef.set(
+      {
+        'channels': FieldValue.arrayRemove([topic]),
+      },
+      SetOptions(merge: true),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Unsubscribed from $topic')),
+    );
+  }
 
   // Function to show a dialog and add a new topic to Firestore
   void showAddChannelDialog() {
@@ -191,6 +198,25 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
       // Delete the document using the channel name as the document ID
       await FirebaseFirestore.instance.collection('Channels').doc(channelName).delete();
 
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not logged in')),
+        );
+        return;
+      }
+
+      final userEmail = currentUser.email;
+
+      if (userEmail == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User email not available')),
+        );
+        return;
+      }
+
+      await unsubscribe(userEmail, channelName);
       // Fetch the updated topics list
       fetchTopicsFromFirestore();
 
@@ -208,7 +234,7 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: cardNames.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Colors.cyan,))
           : ListView.builder(
               itemCount: cardNames.length,
               itemBuilder: (context, index) {

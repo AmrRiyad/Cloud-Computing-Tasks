@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
-  late StreamSubscription<String> _languageChangeSubscription;
   late UserModel? _currentUser;
   late StreamSubscription _userChangeSubscription;
   late bool _isLoading;
@@ -64,7 +63,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   @override
   void dispose() {
-    _languageChangeSubscription.cancel();
     _userChangeSubscription.cancel();
     super.dispose();
   }
