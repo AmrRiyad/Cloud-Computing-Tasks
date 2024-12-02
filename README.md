@@ -1,16 +1,31 @@
-# cc_sa_1
+# Cloud Computing Tasks
 
-Cloud Computing Section Assignment #1
+This repository contains a collection of tasks and assignments related to Cloud Computing, implemented as a Flutter application. It includes source code, configuration files, and platform-specific adaptations.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Cross-platform Flutter app targeting mobile, desktop, and web.
+- Implements specific cloud computing concepts and assignments.
+- Organized structure with platform-specific directories and dependencies.
 
-A few resources to get you started if this is your first Flutter project:
+## Setup Instructions
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. Clone the Repository:
+   ```bash
+   git clone https://github.com/AmrRiyad/Cloud-Computing-Tasks.git
+   cd Cloud-Computing-Tasks
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. Install Flutter Dependencies:
+   Install the necessary dependencies by running:
+   ```bash
+   flutter pub get
+
+3. Setup Firebase (if applicable):
+      Configure Firebase by adding the appropriate configuration files:
+
+   - Add your Firebase configuration files under the respective platforms (android, ios, web).
+   - Update firebase.json if necessary.
+
+4. Run the App:
+   ```bash
+   flutter run
