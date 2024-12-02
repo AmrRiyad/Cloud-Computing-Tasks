@@ -104,7 +104,9 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
 
   Future<void> subscribe(String userEmail, String topic) async {
     final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
+    final channelDocRef = FirebaseFirestore.instance.collection('Channels').doc(topic);
 
+    final token = await FirebaseMessaging.instance.getToken();
     // Subscribe to the topic
     await FirebaseMessaging.instance.subscribeToTopic(topic);
 
@@ -112,6 +114,13 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     await userDocRef.set(
       {
         'channels': FieldValue.arrayUnion([topic]),
+      },
+      SetOptions(merge: true), // Merge with existing data
+    );
+
+    await channelDocRef.set(
+      {
+        'subs': FieldValue.arrayUnion([token]),
       },
       SetOptions(merge: true), // Merge with existing data
     );
@@ -138,6 +147,7 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Unsubscribed from $topic')),
     );
+
   }
 
   // Function to show a dialog and add a new topic to Firestore
