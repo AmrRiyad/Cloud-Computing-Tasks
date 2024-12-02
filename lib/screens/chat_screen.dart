@@ -89,6 +89,13 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
                     return message;
                   }).toList();
 
+                  // Sort the messages by timestamp
+                  messages.sort((a, b) {
+                    final timestampA = a['timestamp'] ?? 0;
+                    final timestampB = b['timestamp'] ?? 0;
+                    return timestampA.compareTo(timestampB);
+                  });
+
                   return ListView.builder(
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
