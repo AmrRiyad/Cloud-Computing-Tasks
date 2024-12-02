@@ -16,12 +16,14 @@ This repository contains a collection of tasks and assignments related to Cloud 
    cd Cloud-Computing-Tasks
 
 2. Install Flutter Dependencies:
+
    Install the necessary dependencies by running:
    ```bash
    flutter pub get
 
 3. Setup Firebase (if applicable):
-      Configure Firebase by adding the appropriate configuration files:
+
+     Configure Firebase by adding the appropriate configuration files:
 
    - Add your Firebase configuration files under the respective platforms (android, ios, web).
    - Update firebase.json if necessary.
