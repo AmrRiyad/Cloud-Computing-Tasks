@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 import '../services/validation.dart';
+import 'all_channels_screen.dart';
 import 'base.dart';
 import 'base_screen.dart';
 
@@ -15,151 +18,126 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends BaseScreen<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   IValidationService get _validationService => ValidationService();
+
+  String? _verificationId;
 
   @override
   Widget build(BuildContext context) {
     return isLoading
         ? buildLoadingIndicator()
         : Scaffold(
-            appBar: AppBar(),
-            body: Center(child: _buildLoginForm()),
-          );
+      appBar: AppBar(title: const Text("Login")),
+      body: Center(child: _buildLoginForm()),
+    );
   }
 
   Widget _buildLoginForm() {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    double titleFontSize = screenWidth * 0.06;
+    double verticalSpacingSmall = screenHeight * 0.02;
     double horizontalPadding = screenWidth * 0.05;
-    double verticalSpacingSmall = screenHeight * 0.022;
 
     return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            SizedBox(height: verticalSpacingSmall),
-            Text(
-              "Login",
-              style: TextStyle(
-                  fontSize: titleFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-            SizedBox(height: verticalSpacingSmall),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: _buildTextField(
-                _emailController,
-                "Email",
-                _validationService.validateEmail,
-                true,
-                TextInputType.emailAddress,
-              ),
-            ),
-            SizedBox(height: verticalSpacingSmall),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: _buildTextField(
-                _passwordController,
-                "password",
-                _validationService.validatePassword,
-                true,
-                TextInputType.visiblePassword,
-              ),
-            ),
-            SizedBox(height: verticalSpacingSmall),
-            _buildLoginButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-      TextEditingController controller,
-      String label,
-      String? Function(String?) validator,
-      bool required,
-      TextInputType keyboard,
-      {bool isPassword = false}) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    // Responsive adjustments
-    double fontSize = screenWidth * 0.045;
-    double verticalPadding = screenWidth * 0.02;
-    double borderRadius = screenWidth * 0.03;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: verticalPadding),
-      child: TextFormField(
-        selectionControls: EmptyTextSelectionControls(),
-        keyboardType: keyboard,
-        style: TextStyle(color: Colors.black, fontSize: fontSize),
-        controller: controller,
-        cursorColor: Colors.cyan,
-        cursorOpacityAnimates: true,
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-            borderSide:
-                const BorderSide(color: Colors.black87),
+      child: Column(
+        children: [
+          SizedBox(height: verticalSpacingSmall),
+          Text(
+            "Login",
+            style: TextStyle(
+                fontSize: screenWidth * 0.06,
+                fontWeight: FontWeight.bold,
+                color: Colors.black),
           ),
-          labelStyle: TextStyle(
-              color: Colors.black87,
-              fontSize: fontSize),
-          hintStyle: TextStyle(
-              color: Colors.black12,
-              fontSize: fontSize * 0.9),
-          labelText: '$label${required ? ' *' : ''}',
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(borderRadius)),
-        ),
-        validator: validator,
+          SizedBox(height: verticalSpacingSmall),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: ElevatedButton.icon(
+              onPressed: () => _showEmailPasswordLogin(),
+              icon: const Icon(Icons.email, color: Colors.white),
+              label: const Text("Login with Email/Password"),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: ElevatedButton.icon(
+              onPressed: () => _showPhoneOtpLogin(),
+              icon: const Icon(Icons.phone, color: Colors.white),
+              label: const Text("Login with Phone/OTP"),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: ElevatedButton.icon(
+              onPressed: () => _signInWithGoogle(context), // Pass context here
+              icon: const Icon(Icons.g_mobiledata, color: Colors.white),
+              label: const Text("Login with Google"),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildLoginButton() {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
-    // Responsive button size and font size adjustments
-    double buttonWidth = screenWidth * 0.5;
-    double buttonHeight = screenHeight * 0.08;
-    double fontSize = screenWidth * 0.045;
-
-    return ElevatedButton(
-      onPressed: _login,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.cyan,
-        fixedSize: Size(buttonWidth, buttonHeight),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-      ),
-      child: Text(
-        "Sign In",
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-        ),
-      ),
+  void _showEmailPasswordLogin() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Email/Password Login"),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField(
+                  _emailController,
+                  "Email",
+                  _validationService.validateEmail,
+                  true,
+                  TextInputType.emailAddress,
+                ),
+                _buildTextField(
+                  _passwordController,
+                  "Password",
+                  _validationService.validatePassword,
+                  true,
+                  TextInputType.visiblePassword,
+                  isPassword: true,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: _loginWithEmailPassword,
+              child: const Text("Sign In"),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _login() async {
+  void _loginWithEmailPassword() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
       try {
-        await userService.signIn(
-            _emailController.text, _passwordController.text);
-
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
         toastService.showSuccessMessage("Signed in successfully");
         if (mounted) {
           Navigator.of(context).pushReplacement(
@@ -168,29 +146,165 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
         }
       } on FirebaseAuthException catch (e) {
         setState(() => isLoading = false);
-
         if (e.code == 'user-not-found') {
-          toastService
-              .showErrorMessage("Phone Number Not Registered");
+          toastService.showErrorMessage("Email not registered");
         } else if (e.code == 'wrong-password') {
-          toastService.showErrorMessage("signInError");
+          toastService.showErrorMessage("Wrong password");
         } else {
-          toastService
-              .showErrorMessage("unknownErrorOccurred");
+          toastService.showErrorMessage("An error occurred");
         }
-      } catch (e) {
-        setState(() => isLoading = false);
-        toastService.showErrorMessage("unknownErrorOccurred");
       } finally {
         setState(() => isLoading = false);
       }
     }
   }
 
+  void _showPhoneOtpLogin() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder( // Use StatefulBuilder to update the dialog's UI
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Phone/OTP Login"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(
+                    _phoneController,
+                    "Phone Number",
+                    _validationService.validateNotEmpty,
+                    true,
+                    TextInputType.phone,
+                  ),
+                  if (_verificationId != null) // Show OTP field after OTP is sent
+                    _buildTextField(
+                      _otpController,
+                      "OTP",
+                      _validationService.validateNotEmpty,
+                      true,
+                      TextInputType.number,
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: _verificationId == null
+                      ? () => _sendOtp(setState)
+                      : _verifyOtp,
+                  child: Text(_verificationId == null ? "Send OTP" : "Verify OTP"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _sendOtp(Function setState) async {
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: _phoneController.text,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+          toastService.showSuccessMessage("Phone Authentication Successful");
+          Navigator.pop(context); // Close the dialog on success
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          toastService.showErrorMessage("Error: ${e.message}");
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          setState(() {
+            _verificationId = verificationId;
+          });
+          toastService.showSuccessMessage("OTP Sent");
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          setState(() {
+            _verificationId = null;
+          });
+        },
+      );
+    } catch (e) {
+      toastService.showErrorMessage("Error sending OTP");
+    }
+  }
+
+  void _verifyOtp() async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: _otpController.text,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      toastService.showSuccessMessage("Phone Authentication Successful");
+      Navigator.pop(context); // Close the dialog on success
+    } catch (e) {
+      toastService.showErrorMessage("Invalid OTP");
+    }
+  }
+
+
+  void _signInWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+        // Show success message
+        toastService.showSuccessMessage("Google Authentication Successful");
+
+        // Navigate to the home page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+      toastService.showErrorMessage("Google Authentication Failed");
+    }
+  }
+
+
+  Widget _buildTextField(
+      TextEditingController controller,
+      String label,
+      String? Function(String?) validator,
+      bool required,
+      TextInputType keyboard, {
+        bool isPassword = false,
+      }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboard,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        labelText: '$label${required ? ' *' : ''}',
+      ),
+      validator: validator,
+    );
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 }

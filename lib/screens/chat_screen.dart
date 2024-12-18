@@ -26,64 +26,6 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
     currentUser = FirebaseAuth.instance.currentUser!;
   }
 
-  Future<void> sendNotificationToSubscribers(String channelName, String messageText) async {
-    try {
-      final ref = FirebaseFirestore.instance
-          .collection('Channels')
-          .doc(channelName);
-
-      final snapshot = await ref.get();
-
-      if (!snapshot.exists || !snapshot.data()!.containsKey('subscribers')) {
-        print('No subscribers to notify');
-        return;
-      }
-
-      // Extract the subscribers array
-      final subscribers = snapshot.data()!['subscribers'] as List<dynamic>?;
-
-      if (subscribers == null || subscribers.isEmpty) {
-        print('No valid subscribers');
-        return;
-      }
-
-      // Web FCM Notification Payload
-      final notification = {
-        "notification": {
-          "title": "New message in $channelName",
-          "body": messageText,
-        },
-        "tokens": subscribers.cast<String>(), // FCM Tokens to send to
-      };
-
-      // FCM API URL for Web Push
-      const fcmUrl = "https://fcm.googleapis.com/v1/projects/flutter-cloud-computing-tasks/messages:send";
-
-      // Authorization using the Web API Key (from Firebase console, not the server key)
-      const fcmApiKey = 'BDg6HVqImFnXEqJn5ZqWzYdny3Z7pPr40trNV_mp-ib7oVgfVxYsTDN5UbwMpw4Q3BqliuLnouRH3dM1B6Tq5CQ'; // Replace with your Web API Key from Firebase Console
-
-      // Send the HTTP POST request to FCM API for Web Push
-      final response = await http.post(
-        Uri.parse(fcmUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $fcmApiKey',
-        },
-        body: json.encode({
-          "message": notification,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('Notification sent successfully');
-      } else {
-        print('Failed to send notification: ${response.body}');
-      }
-    } catch (e) {
-      print('Error sending notification: $e');
-    }
-  }
-
   Future<void> sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
@@ -105,8 +47,6 @@ class _ChannelChatScreenState extends State<ChannelChatScreen> {
     });
 
     // Notify all subscribers
-    await sendNotificationToSubscribers(channelName, message);
-
     _messageController.clear();
   }
 
