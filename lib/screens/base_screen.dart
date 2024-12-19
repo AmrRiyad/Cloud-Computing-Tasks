@@ -1,8 +1,10 @@
+import 'package:cc_sa_1/screens/login.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-import 'base.dart';
 import '../models/user.dart';
 import 'all_channels_screen.dart';
+import 'base.dart';
 import 'my_channels_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -34,13 +36,13 @@ class _MainScreenState extends BaseScreen<MainScreen> {
     return isLoading
         ? buildLoadingIndicator()
         : Scaffold(
-          appBar: _buildAppBar(currentUser),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: _buildPageContent(),
-          ),
-          bottomNavigationBar: _buildBottomNavigationBar(),
-        );
+            appBar: _buildAppBar(currentUser),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: _buildPageContent(),
+            ),
+            bottomNavigationBar: _buildBottomNavigationBar(),
+          );
   }
 
   Widget _buildPageContent() {
@@ -54,12 +56,24 @@ class _MainScreenState extends BaseScreen<MainScreen> {
     String appBarTitle;
     appBarTitle = screenTitle;
 
-
     double titleSize = 0.4 * AppBar().preferredSize.height;
     return AppBar(
       leading: Image.asset("assets/cloud.png"),
       leadingWidth: titleSize * 3,
       centerTitle: true,
+      actions: [
+        IconButton(
+          onPressed: () async {
+            GoogleSignIn googleSignIn = GoogleSignIn();
+            googleSignIn.disconnect();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          },
+          icon: const Icon(Icons.exit_to_app),
+        )
+      ],
       title: Text(appBarTitle, style: TextStyle(fontSize: titleSize)),
     );
   }

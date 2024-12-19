@@ -79,9 +79,88 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
               label: const Text("Login with Google"),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: ElevatedButton.icon(
+              onPressed: () => _showEmailPasswordSignup(),
+              icon: const Icon(Icons.person_add, color: Colors.white),
+              label: const Text("Sign Up with Email/Password"),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  void _showEmailPasswordSignup() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Email/Password Signup"),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField(
+                  _emailController,
+                  "Email",
+                  _validationService.validateEmail,
+                  true,
+                  TextInputType.emailAddress,
+                ),
+                _buildTextField(
+                  _passwordController,
+                  "Password",
+                  _validationService.validatePassword,
+                  true,
+                  TextInputType.visiblePassword,
+                  isPassword: true,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: _signupWithEmailPassword,
+              child: const Text("Sign Up"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _signupWithEmailPassword() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => isLoading = true);
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+        toastService.showSuccessMessage("Account created successfully. You can now log in.");
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      } on FirebaseAuthException catch (e) {
+        setState(() => isLoading = false);
+        if (e.code == 'email-already-in-use') {
+          toastService.showErrorMessage("Email already in use.");
+        } else {
+          toastService.showErrorMessage("An error occurred: ${e.message}");
+        }
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   void _showEmailPasswordLogin() {
@@ -163,7 +242,7 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder( // Use StatefulBuilder to update the dialog's UI
+        return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
               title: const Text("Phone/OTP Login"),
