@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +15,31 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   // List of card names (topics) and subscription states
   List<String> cardNames = [];
   List<bool> isSubscribed = [];
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   @override
   void initState() {
     super.initState();
-    // Fetch topics from Firestore
+    analytics.setAnalyticsCollectionEnabled(true);
     fetchTopicsFromFirestore();
+  }
+
+  Future<void> logSubscription(String channelName) async {
+    await analytics.logEvent(
+      name: "sub_channel",
+      parameters: {"channel_name": channelName},
+      callOptions: AnalyticsCallOptions(global: true),
+    );
+    print('Subscription event logged');
+  }
+
+  Future<void> logUnsubscription(String channelName) async {
+    await analytics.logEvent(
+      name: "unsub_channel",
+      parameters: {"channel_name": channelName},
+      callOptions: AnalyticsCallOptions(global: true),
+    );
+    print('Unsubscription event logged');
   }
 
   Future<void> fetchTopicsFromFirestore() async {
@@ -38,12 +58,13 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
       final firestore = FirebaseFirestore.instance;
 
       // Fetch all available topics
-      QuerySnapshot topicSnapshot = await firestore.collection('Channels').get();
+      QuerySnapshot topicSnapshot =
+          await firestore.collection('Channels').get();
       List<String> topics = topicSnapshot.docs.map((doc) => doc.id).toList();
 
       // Fetch user's subscribed channels
       DocumentSnapshot userDoc =
-      await firestore.collection('users').doc(userEmail).get();
+          await firestore.collection('users').doc(userEmail).get();
       List<String> userChannels = [];
       if (userDoc.exists) {
         final data = userDoc.data() as Map<String, dynamic>;
@@ -55,7 +76,8 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
       // Set state to update the UI
       setState(() {
         cardNames = topics;
-        isSubscribed = topics.map((topic) => userChannels.contains(topic)).toList();
+        isSubscribed =
+            topics.map((topic) => userChannels.contains(topic)).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,8 +125,11 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   }
 
   Future<void> subscribe(String userEmail, String topic) async {
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
-    final channelDocRef = FirebaseFirestore.instance.collection('Channels').doc(topic);
+    logSubscription(topic);
+    final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(userEmail);
+    final channelDocRef =
+        FirebaseFirestore.instance.collection('Channels').doc(topic);
 
     final token = await FirebaseMessaging.instance.getToken();
     // Subscribe to the topic
@@ -131,7 +156,9 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   }
 
   Future<void> unsubscribe(String userEmail, String topic) async {
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userEmail);
+    logUnsubscription(topic);
+    final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(userEmail);
 
     // Unsubscribe from the topic
     await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
@@ -143,11 +170,9 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
       },
       SetOptions(merge: true),
     );
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Unsubscribed from $topic')),
     );
-
   }
 
   // Function to show a dialog and add a new topic to Firestore
@@ -206,7 +231,10 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   Future<void> deleteChannel(String channelName) async {
     try {
       // Delete the document using the channel name as the document ID
-      await FirebaseFirestore.instance.collection('Channels').doc(channelName).delete();
+      await FirebaseFirestore.instance
+          .collection('Channels')
+          .doc(channelName)
+          .delete();
 
       final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -244,16 +272,22 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: cardNames.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyan,))
+          ? const Center(
+              child: CircularProgressIndicator(
+              color: Colors.cyan,
+            ))
           : ListView.builder(
               itemCount: cardNames.length,
               itemBuilder: (context, index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white, // Card background color
-                    border: Border.all(color: Colors.cyan, width: 1.5), // Cyan border
-                    borderRadius: BorderRadius.circular(8.0), // Optional: Rounded corners
+                    border: Border.all(
+                        color: Colors.cyan, width: 1.5), // Cyan border
+                    borderRadius:
+                        BorderRadius.circular(8.0), // Optional: Rounded corners
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -263,7 +297,8 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
                         // Card title
                         Text(
                           cardNames[index],
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         const Spacer(),
                         // Subscribe/Unsubscribe button
@@ -272,28 +307,34 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isSubscribed[index]
                                 ? Colors.white // White for "Unsubscribe"
-                                : Colors.cyan, // Cyan for "Subscribe"
-                            side: const BorderSide(color: Colors.cyan, width: 1.5), // Cyan border
+                                : Colors.cyan,
+                            // Cyan for "Subscribe"
+                            side: const BorderSide(
+                                color: Colors.cyan, width: 1.5),
+                            // Cyan border
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                              borderRadius:
+                                  BorderRadius.circular(8.0), // Rounded corners
                             ),
                           ),
                           child: Text(
                             isSubscribed[index] ? 'Unsubscribe' : 'Subscribe',
                             style: TextStyle(
-                              color: isSubscribed[index] ? Colors.cyan : Colors.white,
+                              color: isSubscribed[index]
+                                  ? Colors.cyan
+                                  : Colors.white,
                             ),
                           ),
                         ),
                         IconButton(
                           onPressed: () => deleteChannel(cardNames[index]),
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
                         ),
                       ],
                     ),
                   ),
-                )
-                ;
+                );
               },
             ),
       floatingActionButton: FloatingActionButton(
@@ -307,7 +348,6 @@ class _ScrollableCardsPageState extends State<ScrollableCardsPage> {
         ),
         child: const Icon(Icons.add),
       ),
-
     );
   }
 }

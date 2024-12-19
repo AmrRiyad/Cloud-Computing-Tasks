@@ -1,6 +1,7 @@
 import 'package:cc_sa_1/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 import '../models/user.dart';
 import 'all_channels_screen.dart';
@@ -77,6 +78,8 @@ class _MainScreenState extends BaseScreen<MainScreen> {
       title: Text(appBarTitle, style: TextStyle(fontSize: titleSize)),
     );
   }
+
+
 
   BottomNavigationBar _buildBottomNavigationBar() {
     return BottomNavigationBar(

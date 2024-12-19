@@ -1,10 +1,9 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 import '../services/validation.dart';
-import 'all_channels_screen.dart';
 import 'base.dart';
 import 'base_screen.dart';
 
@@ -31,9 +30,9 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     return isLoading
         ? buildLoadingIndicator()
         : Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: Center(child: _buildLoginForm()),
-    );
+            appBar: AppBar(title: const Text("Login")),
+            body: Center(child: _buildLoginForm()),
+          );
   }
 
   Widget _buildLoginForm() {
@@ -92,6 +91,13 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     );
   }
 
+  Future<void> logFirstTimeLogin() async {
+    FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+
+    await analytics.logEvent(name: 'first_login', parameters: {});
+    print('First-time login event logged');
+  }
+
   void _showEmailPasswordSignup() {
     showDialog(
       context: context,
@@ -146,7 +152,8 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
           email: _emailController.text,
           password: _passwordController.text,
         );
-        toastService.showSuccessMessage("Account created successfully. You can now log in.");
+        toastService.showSuccessMessage(
+            "Account created successfully. You can now log in.");
         if (mounted) {
           Navigator.pop(context);
         }
@@ -218,6 +225,9 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
           password: _passwordController.text,
         );
         toastService.showSuccessMessage("Signed in successfully");
+
+        logFirstTimeLogin();
+
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -256,7 +266,8 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
                     true,
                     TextInputType.phone,
                   ),
-                  if (_verificationId != null) // Show OTP field after OTP is sent
+                  if (_verificationId !=
+                      null) // Show OTP field after OTP is sent
                     _buildTextField(
                       _otpController,
                       "OTP",
@@ -277,7 +288,8 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
                   onPressed: _verificationId == null
                       ? () => _sendOtp(setState)
                       : _verifyOtp,
-                  child: Text(_verificationId == null ? "Send OTP" : "Verify OTP"),
+                  child:
+                      Text(_verificationId == null ? "Send OTP" : "Verify OTP"),
                 ),
               ],
             );
@@ -324,19 +336,23 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
       toastService.showSuccessMessage("Phone Authentication Successful");
-      Navigator.pop(context); // Close the dialog on success
+      logFirstTimeLogin();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
     } catch (e) {
       toastService.showErrorMessage("Invalid OTP");
     }
   }
 
-
   void _signInWithGoogle(BuildContext context) async {
     try {
+      logFirstTimeLogin();
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+            await googleUser.authentication;
         final credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
@@ -345,7 +361,6 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
 
         // Show success message
         toastService.showSuccessMessage("Google Authentication Successful");
-
         // Navigate to the home page
         Navigator.pushReplacement(
           context,
@@ -358,15 +373,14 @@ class LoginScreenState extends BaseScreen<LoginScreen> {
     }
   }
 
-
   Widget _buildTextField(
-      TextEditingController controller,
-      String label,
-      String? Function(String?) validator,
-      bool required,
-      TextInputType keyboard, {
-        bool isPassword = false,
-      }) {
+    TextEditingController controller,
+    String label,
+    String? Function(String?) validator,
+    bool required,
+    TextInputType keyboard, {
+    bool isPassword = false,
+  }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboard,
